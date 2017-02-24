@@ -68,8 +68,7 @@ runcmd(struct cmd *cmd)
   case '>':
   case '<':
     rcmd = (struct redircmd*)cmd;
-    fprintf(stderr, "redir not implemented\n");
-    // Your code here ...
+    /* fprintf(stderr, "redir not implemented\n"); */
     close(rcmd->fd);
     if (open(rcmd->file, rcmd->mode, 0777) < 0) {
       fprintf(stderr, "open %s failed\n", rcmd->file);
@@ -80,8 +79,34 @@ runcmd(struct cmd *cmd)
 
   case '|':
     pcmd = (struct pipecmd*)cmd;
-    fprintf(stderr, "pipe not implemented\n");
-    // Your code here ...
+    /* fprintf(stderr, "pipe not implemented\n"); */
+    if (pipe(p) < 0) {
+      fprintf(stderr, "Open pip failed!!!\n");
+    }
+    if (fork1() == 0) {
+      close(fileno(stdout));
+      dup(p[1]);
+      close(p[0]);
+      close(p[1]);
+      runcmd(pcmd->left);
+    }
+
+    if (fork1() == 0) {
+      close(fileno(stdin));
+      dup(p[0]);
+      close(p[0]);
+      close(p[1]);
+      runcmd(pcmd->right);
+    }
+
+    close(p[0]);
+    close(p[1]);
+
+    int *wstatus1;
+    int *wstatus2;
+    wait(wstatus1);
+    wait(wstatus2);
+
     break;
   }
   exit(0);
