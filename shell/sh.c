@@ -61,8 +61,8 @@ runcmd(struct cmd *cmd)
     ecmd = (struct execcmd*)cmd;
     if(ecmd->argv[0] == 0)
       exit(0);
-    fprintf(stderr, "exec not implemented\n");
-    // Your code here ...
+    execv(ecmd->argv[0], ecmd->argv);
+    fprintf(stderr, "exec %s failed\n", ecmd->argv[0]);
     break;
 
   case '>':
@@ -70,6 +70,11 @@ runcmd(struct cmd *cmd)
     rcmd = (struct redircmd*)cmd;
     fprintf(stderr, "redir not implemented\n");
     // Your code here ...
+    close(rcmd->fd);
+    if (open(rcmd->file, rcmd->mode, 0777) < 0) {
+      fprintf(stderr, "open %s failed\n", rcmd->file);
+    }
+    open(rcmd->file, rcmd->mode, 0777);
     runcmd(rcmd->cmd);
     break;
 
